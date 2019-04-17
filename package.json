@@ -17,7 +17,9 @@
   },
   "homepage": "https://github.com/lzf0514/hapi-demo#readme",
   "dependencies": {
+    "bcrypt": "^3.0.6",
     "hapi": "^18.1.0",
+    "hapi-auth-basic": "^5.0.0",
     "inert": "^5.1.3"
   }
 }
