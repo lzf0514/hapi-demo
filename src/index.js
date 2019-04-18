@@ -1,5 +1,7 @@
 const Hapi = require('hapi');
 const Bcrypt = require('bcrypt');
+const HapiJWT = require('hapi-jsonwebtoken');
+const HapiJWTConfig = require('./config/jsonwebtoken');
 
 const user = {
   username: 'john',
@@ -25,26 +27,39 @@ const init = async () => {
     host: 'localhost'
   })
 
-  await server.register(require('hapi-auth-basic'));
-  server.auth.strategy('myAuth', 'basic', { validate });
+  // await server.register(require('hapi-auth-basic'));
+  // server.auth.strategy('myAuth', 'basic', { validate });
+
+  await server.register(HapiJWT.plugin);
+  server.auth.strategy('jwt', 'hapi-jsonwebtoken', HapiJWTConfig);
+  // server.auth.default('jwt');
+
   await server.register(require('inert'));
 
   server.route({
     method: 'GET',
     path: '/',
     options: {
-      auth: 'myAuth'
+      auth: 'jwt'
     },
     handler: (request, h) => {
-      return `Hello ${request.auth.credentials.name}`;
+      return JSON.stringify(request.auth.credentials.decodeToken);
     }
   });
 
   server.route({
     method: 'GET',
     path: '/{name}',
+    options: {
+      auth: false
+    },
     handler: (request, h) => {
-      return `Hello ${encodeURIComponent(request.params.name)}!`;
+      const token = request.server.methods.jwtSign({
+        id: 1,
+        name: request.params.name,
+        isActive: true
+      });
+      return token;
     }
   });
 
